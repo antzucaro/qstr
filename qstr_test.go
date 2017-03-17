@@ -70,3 +70,25 @@ func TestCappedHigh(t *testing.T) {
 		t.Errorf("Incorrect HSL cap for RGB color %v. Expected: >= 50.0, Got: %v.", c, h.L)
 	}
 }
+
+func TestStrippedQStr(t *testing.T) {
+	nicks := []string{
+		"Anti^x444body",
+		"^x444Antibody",
+		"Antibody^x444",
+		"Anti^7body",
+		"^7Antibody",
+		"Antibody^7",
+	}
+
+    expected := "Antibody"
+	for _, nick := range nicks {
+		nickQ := QStr(nick)
+        received := nickQ.Stripped()
+
+		if received != expected {
+			t.Errorf("Incorrect stripping applied to %v. Expected: %v, Got: %v.", nick, expected, received)
+		}
+	}
+}
+
