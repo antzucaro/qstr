@@ -159,16 +159,30 @@ func hueToRGB(p, q, t float64) float64 {
 	return p
 }
 
-var allColors = regexp.MustCompile(`\^(\d|x[\dA-Fa-f]{3})`)
+// color codes of the form ^N
 var decColors = regexp.MustCompile(`\^(\d)`)
+
+// color codes of the form ^xNNN
 var hexColors = regexp.MustCompile(`\^x([\dA-Fa-f])([\dA-Fa-f])([\dA-Fa-f])`)
 
+// either of the above forms of color codes
+var allColors = regexp.MustCompile(`\^(\d|x[\dA-Fa-f]{3})`)
+
+// Type QStr is a Quake-style string with optional embedded color codes within
+// it. The color codes can take a basic form of ^N, where N is in 0..9. These
+// represent a basic color palette. The more expanded color code form is ^xNNN,
+// where the Ns are hexadecimal characters. This form allows you to specify
+// colors with greater precision.
 type QStr string
 
+// Stripped removes all of the color codes from string
 func (s *QStr) Stripped() string {
 	return allColors.ReplaceAllString(string(*s), "")
 }
 
+// HTML returns the HTML representation of the QStr. Color codes are converted
+// into nested <span> elements with the appropriate color attached as inline
+// CSS.
 func (s *QStr) HTML() template.HTML {
 	// color representation by key for the "^n" format, where n is 0-9
 	var decimalSpans = map[string]string{
