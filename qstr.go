@@ -10,16 +10,10 @@ import (
 	"strings"
 )
 
-// RGBColor is a color in the RGB space. R, G, and B are in the range [0, 255]
+// RGBColor is a color in the RGB space. R, G, and B are in the range [0.0, 255.0]
 type RGBColor struct {
-	// Red
-	R int
-
-	// Green
-	G int
-
-	// Blue
-	B int
+	// Red, Green, and Blue
+	R, G, B float64
 }
 
 // HexToRGB converts a sequence of three hexadecimal characters into an RGBColor
@@ -29,54 +23,49 @@ func HexToRGB(r string, g string, b string) (c RGBColor) {
 	green, _ := strconv.ParseInt(fmt.Sprintf("%s%s", g, g), 16, 0)
 	blue, _ := strconv.ParseInt(fmt.Sprintf("%s%s", b, b), 16, 0)
 
-	return RGBColor{int(red), int(green), int(blue)}
+	return RGBColor{float64(red), float64(green), float64(blue)}
 }
 
 // SpanStr converts an RGBColor into a string representing an
 // HTML span with inline coloring
 func (c *RGBColor) SpanStr() string {
-	return fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", c.R, c.G, c.B)
+	return fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", int(c.R), int(c.G), int(c.B))
 }
 
-// HSL converts an RGBColor to a HSLColor
-//
-// Adapted from http://code.google.com/p/gorilla/source/browse/color/hsl.go,
-// which in turn was ported from http://goo.gl/Vg1h9.
-func (c *RGBColor) HSL() (h HSLColor) {
-	fR := float64(c.R) / 255
-	fG := float64(c.G) / 255
-	fB := float64(c.B) / 255
+// HSL converts an RGBColor into an HSLColor
+func (c *RGBColor) HSL() HSLColor {
+	maxC := math.Max(math.Max(c.R, c.G), c.B)
+	minC := math.Min(math.Min(c.R, c.G), c.B)
 
-	max := math.Max(math.Max(fR, fG), fB)
-	min := math.Min(math.Min(fR, fG), fB)
+	var h, l, s float64
 
-	h.L = (max + min) / 2
-
-	if max == min {
-		// Achromatic.
-		h.H, h.S = 0, 0
-	} else {
-		// Chromatic.
-		d := max - min
-		if h.L > 0.5 {
-			h.S = d / (2.0 - max - min)
-		} else {
-			h.S = d / (max + min)
-		}
-		switch max {
-		case fR:
-			h.H = (fG - fB) / d
-			if fG < fB {
-				h.H += 6
-			}
-		case fG:
-			h.H = (fB-fR)/d + 2
-		case fB:
-			h.H = (fR-fG)/d + 4
-		}
-		h.H /= 6
+	l = (minC + maxC) / 2.0
+	if minC == maxC {
+		return HSLColor{0.0, 0.0, l}
 	}
-	return
+	if l <= 0.5 {
+		s = (maxC - minC) / (maxC + minC)
+	} else {
+		s = (maxC - minC) / (2.0 - maxC - minC)
+	}
+	rc := (maxC - c.R) / (maxC - minC)
+	gc := (maxC - c.G) / (maxC - minC)
+	bc := (maxC - c.B) / (maxC - minC)
+
+	if c.R == maxC {
+		h = bc - gc
+	} else if c.G == maxC {
+		h = 2.0 + rc - bc
+	} else {
+		h = 4.0 + gc - rc
+	}
+
+	h = math.Mod((h / 6.0), 1.0)
+	if h < 0.0 {
+		h = h + 1.0
+	}
+
+	return HSLColor{h, s, l}
 }
 
 // Capped returns an RGB color that is trimmed to have a lightness
@@ -102,14 +91,8 @@ func (c *RGBColor) Capped(floor float64, ceiling float64) (r RGBColor) {
 
 // HSLColor is a color in the HSL space.
 type HSLColor struct {
-	// Hue
-	H float64
-
-	// Saturation
-	S float64
-
-	// Lightness
-	L float64
+	// Hue, Saturation, and Lightness
+	H, S, L float64
 }
 
 // RGB converts an HSLColor to an RGBColor
@@ -132,9 +115,9 @@ func (c *HSLColor) RGB() (r RGBColor) {
 		fG = hueToRGB(p, q, c.H)
 		fB = hueToRGB(p, q, c.H-1.0/3)
 	}
-	r.R = int((fR * 255) + 0.5)
-	r.G = int((fG * 255) + 0.5)
-	r.B = int((fB * 255) + 0.5)
+	r.R = (fR * 255) + 0.5
+	r.G = (fG * 255) + 0.5
+	r.B = (fB * 255) + 0.5
 	return
 }
 

@@ -1,11 +1,13 @@
 package qstr
 
 import (
-    "fmt"
-    "testing"
+	"fmt"
+	"math"
+	"testing"
 )
 
 func TestHSL(t *testing.T) {
+
 	rgbcolors := []RGBColor{
 		{0, 0, 0},
 		{255, 0, 0},
@@ -15,27 +17,33 @@ func TestHSL(t *testing.T) {
 		{255, 255, 0},
 		{255, 0, 255},
 		{255, 255, 255},
+		{1, 0, 0},
 	}
 
 	hslcolors := []HSLColor{
 		{0.0, 0.0, 0.0},
-		{0, 1, 0.5},
-		{0.3333333333333333, 1, 0.5},
-		{0.6666666666666666, 1, 0.5},
-		{0.5, 1, 0.5},
-		{0.16666666666666666, 1, 0.5},
-		{0.8333333333333334, 1, 0.5},
-		{0, 0, 1},
+		{0.0, -1.00790513834, 127.5},
+		{0.333333333333, -1.00790513834, 127.5},
+		{0.666666666667, -1.00790513834, 127.5},
+		{0.5, -1.00790513834, 127.5},
+		{0.166666666667, -1.00790513834, 127.5},
+		{0.833333333333, -1.00790513834, 127.5},
+		{0.0, 0.0, 255.0},
+		{0.0, 1.0, 0.5},
 	}
+
+	// if the diff goes beyond this value, the test will fail
+	tolerance := 0.005
 
 	for i, v := range rgbcolors {
 		expected := hslcolors[i]
 		received := v.HSL()
 
-		if received.H != expected.H ||
-			received.S != expected.S ||
-			received.L != expected.L {
-			t.Errorf("Incorrect HSL translation for RGB color %v. Expected: %v, Got: %v.", v, expected, received)
+		hDiff := math.Abs(expected.H - received.H)
+		sDiff := math.Abs(expected.S - received.S)
+		lDiff := math.Abs(expected.L - received.L)
+		if hDiff > tolerance || sDiff > tolerance || lDiff > tolerance {
+			t.Errorf("Incorrect HSLv2 translation for RGB color %v. Expected: %v, Got: %v.", v, expected, received)
 		}
 	}
 }
@@ -77,7 +85,7 @@ func TestCappedHigh(t *testing.T) {
 func TestCappedInvalid(t *testing.T) {
 	c := RGBColor{0, 0, 0}
 
-    // this floor value is invalid, so c should not be modified
+	// this floor value is invalid, so c should not be modified
 	cbar := c.Capped(-1, 1)
 
 	if cbar != c {
@@ -95,10 +103,10 @@ func TestStrippedQStr(t *testing.T) {
 		"Antibody^7",
 	}
 
-    expected := "Antibody"
+	expected := "Antibody"
 	for _, nick := range nicks {
 		nickQ := QStr(nick)
-        received := nickQ.Stripped()
+		received := nickQ.Stripped()
 
 		if received != expected {
 			t.Errorf("Incorrect stripping applied to %v. Expected: %v, Got: %v.", nick, expected, received)
@@ -107,27 +115,27 @@ func TestStrippedQStr(t *testing.T) {
 }
 
 func TestHexToRGB(t *testing.T) {
-    var hexRGBList = []struct{
-        R string
-        G string
-        B string
-    }{
-        {"A", "A", "A"},
-        {"0", "0", "0"},
-        {"4", "4", "4"},
-        {"F", "F", "F"},
-    }
+	var hexRGBList = []struct {
+		R string
+		G string
+		B string
+	}{
+		{"A", "A", "A"},
+		{"0", "0", "0"},
+		{"4", "4", "4"},
+		{"F", "F", "F"},
+	}
 
-    expectedList := []RGBColor{
-        RGBColor{170, 170, 170},
-        RGBColor{0, 0, 0},
-        RGBColor{68, 68, 68},
-        RGBColor{255, 255, 255},
-    }
+	expectedList := []RGBColor{
+		RGBColor{170, 170, 170},
+		RGBColor{0, 0, 0},
+		RGBColor{68, 68, 68},
+		RGBColor{255, 255, 255},
+	}
 
 	for i, input := range hexRGBList {
-        received := HexToRGB(input.R, input.G, input.B)
-        expected := expectedList[i]
+		received := HexToRGB(input.R, input.G, input.B)
+		expected := expectedList[i]
 
 		if received != expected {
 			t.Errorf("Incorrect HexToRGB value returned. Expected: %v, Got: %v.", expected, received)
@@ -136,11 +144,11 @@ func TestHexToRGB(t *testing.T) {
 }
 
 func TestSpanStr(t *testing.T) {
-    expected := fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", 1, 2, 3)
-    color := RGBColor{1, 2, 3}
-    received := color.SpanStr()
+	expected := fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", 1, 2, 3)
+	color := RGBColor{1, 2, 3}
+	received := color.SpanStr()
 
-    if received != expected {
-        t.Errorf("Incorrect SpanStr value returned. Expected: %v, Got: %v.", expected, received)
-    }
+	if received != expected {
+		t.Errorf("Incorrect SpanStr value returned. Expected: %v, Got: %v.", expected, received)
+	}
 }
