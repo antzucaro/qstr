@@ -74,6 +74,17 @@ func TestCappedHigh(t *testing.T) {
 	}
 }
 
+func TestCappedInvalid(t *testing.T) {
+	c := RGBColor{0, 0, 0}
+
+    // this floor value is invalid, so c should not be modified
+	cbar := c.Capped(-1, 1)
+
+	if cbar != c {
+		t.Errorf("Incorrect HSL cap for RGB color %v. Expected the same value, but got: %v.", c, cbar)
+	}
+}
+
 func TestStrippedQStr(t *testing.T) {
 	nicks := []string{
 		"Anti^x444body",
