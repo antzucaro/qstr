@@ -1,6 +1,9 @@
 package qstr
 
-import "testing"
+import (
+    "fmt"
+    "testing"
+)
 
 func TestHSL(t *testing.T) {
 	rgbcolors := []RGBColor{
@@ -92,3 +95,41 @@ func TestStrippedQStr(t *testing.T) {
 	}
 }
 
+func TestHexToRGB(t *testing.T) {
+    var hexRGBList = []struct{
+        R string
+        G string
+        B string
+    }{
+        {"A", "A", "A"},
+        {"0", "0", "0"},
+        {"4", "4", "4"},
+        {"F", "F", "F"},
+    }
+
+    expectedList := []RGBColor{
+        RGBColor{170, 170, 170},
+        RGBColor{0, 0, 0},
+        RGBColor{68, 68, 68},
+        RGBColor{255, 255, 255},
+    }
+
+	for i, input := range hexRGBList {
+        received := HexToRGB(input.R, input.G, input.B)
+        expected := expectedList[i]
+
+		if received != expected {
+			t.Errorf("Incorrect HexToRGB value returned. Expected: %v, Got: %v.", expected, received)
+		}
+	}
+}
+
+func TestSpanStr(t *testing.T) {
+    expected := fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", 1, 2, 3)
+    color := RGBColor{1, 2, 3}
+    received := color.SpanStr()
+
+    if received != expected {
+        t.Errorf("Incorrect SpanStr value returned. Expected: %v, Got: %v.", expected, received)
+    }
+}
