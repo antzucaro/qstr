@@ -222,8 +222,8 @@ func (s *QStr) HTML() template.HTML {
 	return template.HTML(r)
 }
 
-// Type QPart is a piece of a QStr with a contiguous color.
-type QPart struct {
+// Type ColorPart is a piece of a QStr with a contiguous color.
+type ColorPart struct {
 	Color RGBColor
 	Part string
 }
@@ -258,8 +258,8 @@ func ColorCodeToColorRGB(rawColorCode string) RGBColor {
 	return RGBColor{128, 128, 128}
 }
 
-// Parts breaks up a QStr into its color-delineated parts
-func (s *QStr) Parts() []QPart {
+// ColorParts breaks up a QStr into its color-delineated parts
+func (s *QStr) ColorParts() []ColorPart {
 	// find the location of all color codes
 	colorLocs := allColors.FindAllStringIndex(string(*s), -1)
 
@@ -278,7 +278,7 @@ func (s *QStr) Parts() []QPart {
 		}
 	}
 
-	parts := make([]QPart, 0, len(colors)+1)
+	parts := make([]ColorPart, 0, len(colors)+1)
 
 	addedChars := false
 	color := RGBColor{128, 128, 128}
@@ -288,7 +288,7 @@ func (s *QStr) Parts() []QPart {
 		if colorIndex, ok := colorCodeIndices[i]; ok {
 			// did we add characters and need to push a new part to the running list?
 			if addedChars {
-				parts = append(parts, QPart{color, nickPart})
+				parts = append(parts, ColorPart{color, nickPart})
 				addedChars = false
 				nickPart = ""
 			}
@@ -299,7 +299,7 @@ func (s *QStr) Parts() []QPart {
 		}
 	}
 	if addedChars {
-		parts = append(parts, QPart{color, nickPart})
+		parts = append(parts, ColorPart{color, nickPart})
 	}
 
 	return parts
