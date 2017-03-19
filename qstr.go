@@ -221,3 +221,86 @@ func (s *QStr) HTML() template.HTML {
 
 	return template.HTML(r)
 }
+
+// Type QPart is a piece of a QStr with a contiguous color.
+type QPart struct {
+	Color RGBColor
+	Part string
+}
+
+// ColorCodeToColorRGB converts a raw color code string into its RGBColor representation
+func ColorCodeToColorRGB(rawColorCode string) RGBColor {
+	if decColors.MatchString(rawColorCode) {
+		switch index := rawColorCode[1:]; index {
+		case "0":
+			return NewRGBColorFrom255(128, 128, 128)
+		case "1":
+			return NewRGBColorFrom255(255, 0, 0)
+		case "3":
+			return NewRGBColorFrom255(51, 255, 0)
+		case "4":
+			return NewRGBColorFrom255(255, 255, 0)
+		case "5":
+			return NewRGBColorFrom255(51, 102, 255)
+		case "6":
+			return NewRGBColorFrom255(51, 255, 255)
+		case "7":
+			return NewRGBColorFrom255(255, 51, 102)
+		case "8":
+			return NewRGBColorFrom255(153, 153, 153)
+		case "9":
+			return NewRGBColorFrom255(128, 128, 128)
+		}
+	} else if hexColors.MatchString(rawColorCode) {
+		return HexToRGB(string(rawColorCode[2]), string(rawColorCode[3]), string(rawColorCode[4]))
+	}
+
+	return RGBColor{128, 128, 128}
+}
+
+// Parts breaks up a QStr into its color-delineated parts
+func (s *QStr) Parts() []QPart {
+	// find the location of all color codes
+	colorLocs := allColors.FindAllStringIndex(string(*s), -1)
+
+	// all of the colors included within the QStr
+	colors := make([]RGBColor, 0, len(colorLocs))
+
+	// positions corresponding to color code characters
+	colorCodeIndices := make(map[int]int, 0)
+
+	// gather up all of the colors present in the string and keep track of their indices
+	for i, loc := range colorLocs {
+		rawColorCode := string(*s)[loc[0]:loc[1]]
+		colors = append(colors, ColorCodeToColorRGB(rawColorCode))
+		for j := loc[0]; j < loc[1]; j++ {
+			colorCodeIndices[j] = i
+		}
+	}
+
+	parts := make([]QPart, 0, len(colors)+1)
+
+	addedChars := false
+	color := RGBColor{128, 128, 128}
+	nickPart := ""
+	for i, c := range string(*s) {
+		// is the character at position i a part of a color code?
+		if colorIndex, ok := colorCodeIndices[i]; ok {
+			// did we add characters and need to push a new part to the running list?
+			if addedChars {
+				parts = append(parts, QPart{color, nickPart})
+				addedChars = false
+				nickPart = ""
+			}
+			color = colors[colorIndex]
+		} else {
+			nickPart += string(c)
+			addedChars = true
+		}
+	}
+	if addedChars {
+		parts = append(parts, QPart{color, nickPart})
+	}
+
+	return parts
+}
