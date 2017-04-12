@@ -1,6 +1,7 @@
 package qstr
 
 import (
+	"bytes"
 	"fmt"
 	"html"
 	"html/template"
@@ -16,10 +17,10 @@ type RGBColor struct {
 	R, G, B float64
 }
 
-func NewRGBColorFrom255(r, g, b float64) (RGBColor) {
-	r = r/255.0
-	g = g/255.0
-	b = b/255.0
+func NewRGBColorFrom255(r, g, b float64) RGBColor {
+	r = r / 255.0
+	g = g / 255.0
+	b = b / 255.0
 
 	return RGBColor{r, g, b}
 }
@@ -38,9 +39,9 @@ func HexToRGB(r string, g string, b string) (c RGBColor) {
 // HTML span with inline coloring
 func (c *RGBColor) SpanStr() string {
 	// convert to a [0, 255] range
-	r255 := int(c.R*255.0)
-	g255 := int(c.G*255.0)
-	b255 := int(c.B*255.0)
+	r255 := int(c.R * 255.0)
+	g255 := int(c.G * 255.0)
+	b255 := int(c.B * 255.0)
 
 	return fmt.Sprintf("<span style=\"color:rgb(%d,%d,%d)\">", r255, g255, b255)
 }
@@ -225,7 +226,7 @@ func (s *QStr) HTML() template.HTML {
 // Type ColorPart is a piece of a QStr with a contiguous color.
 type ColorPart struct {
 	Color RGBColor
-	Part string
+	Part  string
 }
 
 // ColorCodeToColorRGB converts a raw color code string into its RGBColor representation
@@ -303,4 +304,20 @@ func (s *QStr) ColorParts() []ColorPart {
 	}
 
 	return parts
+}
+
+// Decode converts unicode characters within a QStr
+func (s *QStr) Decode(key map[rune]rune) QStr {
+	rs := []rune(string(*s))
+
+	var buffer bytes.Buffer
+	for _, c := range rs {
+		v, ok := key[c]
+		if ok {
+			buffer.WriteRune(v)
+		} else {
+			buffer.WriteRune(c)
+		}
+	}
+	return QStr(buffer.String())
 }

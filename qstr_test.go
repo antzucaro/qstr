@@ -12,9 +12,9 @@ func TestHSL(t *testing.T) {
 		{0, 0, 1},
 		{0, 1, 0},
 		{0, 1, 1},
-		{1,0,0},
-		{1,0,1},
-		{1,1,1},
+		{1, 0, 0},
+		{1, 0, 1},
+		{1, 1, 1},
 	}
 
 	hslcolors := []HSLColor{
@@ -148,5 +148,17 @@ func TestSpanStr(t *testing.T) {
 
 	if received != expected {
 		t.Errorf("Incorrect SpanStr value returned. Expected: %v, Got: %v.", expected, received)
+	}
+}
+
+func TestDecode(t *testing.T) {
+	input := QStr("abcdefgh")
+	expected := QStr("abcd😊😊😊efgh")
+
+	decodeMap := map[rune]rune{'': '😊'}
+
+	decoded := input.Decode(decodeMap)
+	if decoded != expected {
+		t.Errorf("Incorrect decoding. Expected: %v, Got: %v.", expected, decoded)
 	}
 }
