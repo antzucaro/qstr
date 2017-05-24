@@ -237,16 +237,18 @@ func ColorCodeToColorRGB(rawColorCode string) RGBColor {
 			return NewRGBColorFrom255(128, 128, 128)
 		case "1":
 			return NewRGBColorFrom255(255, 0, 0)
-		case "3":
+		case "2":
 			return NewRGBColorFrom255(51, 255, 0)
-		case "4":
+		case "3":
 			return NewRGBColorFrom255(255, 255, 0)
-		case "5":
+		case "4":
 			return NewRGBColorFrom255(51, 102, 255)
-		case "6":
+		case "5":
 			return NewRGBColorFrom255(51, 255, 255)
-		case "7":
+		case "6":
 			return NewRGBColorFrom255(255, 51, 102)
+		case "7":
+			return NewRGBColorFrom255(255, 255, 255)
 		case "8":
 			return NewRGBColorFrom255(153, 153, 153)
 		case "9":
